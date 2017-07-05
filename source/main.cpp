@@ -2,10 +2,6 @@
 
 int main(int argc, char * argv[])
 {
-//    string img_folder  = "../../../HumanDatas_20161224/Humans_frame/";
-//    string msk_folder  = "../../../HumanDatas_20161224/Humans_mask/" ;
-//    string stereo_folder = "../../../HumanDatas_20161224/Humans_stereo/";
-
     string img_folder  = "/Users/Qing/Data/20161224/Human_frame/";
     string msk_folder  = "/Users/Qing/Data/20161224/Human_mask/" ;
     string stereo_folder = "/Users/Qing/Data/20161224/Human_stereo/";

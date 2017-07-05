@@ -3,6 +3,7 @@
 
 #include "../../Qing/qing_image.h"
 #include "../../Qing/qing_ply.h"
+#include "../../Qing/qing_disp.h"
 
 Debugger::Debugger(const string& dir):m_save_dir(dir)  {
 }
@@ -140,30 +141,6 @@ void Debugger::save_init_infos(const int level) {
     //        cout << "debug:\tsaving " << save_fn_l << "\t" << save_fn_r << endl;
     //    }
 # endif
-}
-
-void Debugger::save_seed_infos(const int level) {
-    Mat disp_seed = Mat::zeros(m_h, m_w, CV_32FC1);
-    vector<float>& disp_vec_seed = m_stereo_fl->get_disp_seed();
-    vector<float>& mcost = m_stereo_fl->get_best_mcost_l();
-    vector<float>& prior = m_stereo_fl->get_best_prior_l();
-    qing_vec_2_img<float>(disp_vec_seed, disp_seed);
-
-    string save_fn = m_save_dir + "/seed_disp_" + int2string(level) + ".jpg";
-    save_disp_data(save_fn, disp_seed);
-    cout << "\ndebug:\tsaving " << save_fn << endl;
-
-    save_fn = m_save_dir + "/seeds_" + qing_int_2_string(level) + ".txt";
-    fstream fout(save_fn, ios::out);
-    int idx = -1;
-    for(int y = 0; y < m_h; ++y) {
-        for(int x = 0; x < m_w; ++x) {
-            if(disp_vec_seed[++idx] == 0) continue;
-            fout << y << '\t' << x << '\t' << mcost[idx] << '\t' << prior[idx] << '\n';
-        }
-    }
-    fout.close();
-    cout << "debug:\tsaving " << save_fn << endl;
 }
 
 void Debugger::save_prop_infos(const int level) {

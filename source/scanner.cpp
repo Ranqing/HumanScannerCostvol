@@ -32,7 +32,6 @@ bool HumanBodyScanner::init()
     fin >> m_max_disp;
     fin >> m_min_disp;
 
-    //m_max_disp = 640;                                       //for guarantee
     cout << m_max_disp << '\t' << '~' << '\t' << m_min_disp << endl;
 
     m_qmatrix = Mat::zeros(4, 4, CV_64FC1);
@@ -48,16 +47,16 @@ bool HumanBodyScanner::init()
 
 #if DEBUG
     qing_cwd();
-    cout << "out dir: " << m_out_dir << endl;
+    cout << "out dir: "     << m_out_dir << endl;
     cout << "crop pointL: " << m_crop_pointL << endl;
     cout << "crop pointR: " << m_crop_pointR << endl;
     cout << "image size: "  << m_size << endl;
     cout << "disp range:"   << m_min_disp << " ~ " << m_max_disp << endl;
     cout << "qmatrix: "     << m_qmatrix  << endl;
-    cout << m_img_nameL << endl;
-    cout << m_img_nameR << endl;
-    cout << m_msk_nameL << endl;
-    cout << m_msk_nameR << endl;
+    cout << m_img_nameL     << endl;
+    cout << m_img_nameR     << endl;
+    cout << m_msk_nameL     << endl;
+    cout << m_msk_nameR     << endl;
 
     m_debugger = new Debugger(m_out_dir);
 #endif
@@ -98,11 +97,8 @@ void HumanBodyScanner::load_and_crop_images()
         m_mskR = Mat(m_size, CV_8UC1, cv::Scalar(255));
     }
     else {
-        //        threshold(full_mskL, full_mskL, 75, 255, THRESH_BINARY);
-        //        threshold(full_mskR, full_mskR, 75, 255, THRESH_BINARY);
-
-        qing_threshold_msk(full_mskL, full_mskL, 128, 255);
-        qing_threshold_msk(full_mskR, full_mskR, 128, 255);
+        threshold(full_mskL, full_mskL, 128, 255, THRESH_BINARY);
+        threshold(full_mskR, full_mskR, 128, 255, THRESH_BINARY);
         m_mskL = Mat::zeros(m_size, CV_8UC1);
         m_mskR = Mat::zeros(m_size, CV_8UC1);
         m_mskL = full_mskL(Rect(m_crop_pointL, m_size)).clone();
@@ -117,13 +113,6 @@ void HumanBodyScanner::load_and_crop_images()
     full_imgL(Rect(m_crop_pointL, m_size)).copyTo(m_imgL);
     full_imgR(Rect(m_crop_pointR, m_size)).copyTo(m_imgR);
 # endif
-
-//#if DEBUG
-//    imwrite(m_out_dir + "/crop_imgL.jpg", m_imgL);
-//    imwrite(m_out_dir + "/crop_imgR.jpg", m_imgR);
-//    imwrite(m_out_dir + "/crop_mskL.jpg", m_mskL);
-//    imwrite(m_out_dir + "/crop_mskR.jpg", m_mskR);
-//#endif
 }
 
 void HumanBodyScanner::build_stereo_pyramid()
@@ -206,209 +195,6 @@ void HumanBodyScanner::build_stereo_costvol(const int end) {
     cout << "cost volume pyramid building finished." << endl;
 }
 
-//void HumanBodyScanner::match()
-//{
-//      build_stereo_pyramid();    //build image pyramid
-// //   build_stereo_costvol();    //compute hirerchical matching cost volume
-//
-//    for(int p = m_max_levels - 1; p >= 0; --p) {
-//        m_stereo_pyramid[p]->set_patch_params(QING_WND_SIZE);
-//        m_stereo_pyramid[p]->calc_support_region();
-//        //m_stereo_pyramid[p]->set_voting_params(wnd_sz); //can be replaced by median filtering
-//
-//        double duration = (double)getTickCount();
-//        if(m_max_levels - 1 == p)
-//            m_stereo_pyramid[p]->calc_init_disparity();
-//        else
-//            m_stereo_pyramid[p]->calc_init_disparity(m_stereo_pyramid[p+1]->get_bestk_l(), m_stereo_pyramid[p+1]->get_bestk_r());
-//        m_stereo_pyramid[p]->calc_seed_disparity();
-//
-//        printf( "\n\t--------------------------------------------------------\n" );
-//        printf( "\tseeds selection: %.2lf s\n", ((double)(getTickCount())-duration)/getTickFrequency() );   // the elapsed time in sec
-//        printf( "\t--------------------------------------------------------\n" );
-//#if DEBUG
-//        m_debugger->set_data_source(m_stereo_pyramid[p]);                      //set data source
-//        m_debugger->set_triangulate_info((1.0f/(1<<p)), m_crop_pointL, m_crop_pointR, m_qmatrix);
-//        m_debugger->fast_check_disp_by_depth("qing_check_init_depth_" + qing_int_2_string(p) + ".ply", &(m_stereo_pyramid[p]->get_disp()).front());
-//        m_debugger->fast_check_disp_by_depth("qing_check_seed_depth_" + qing_int_2_string(p) + ".ply", &(m_stereo_pyramid[p]->get_disp_seed()).front());
-//        //  m_debugger->fast_check_by_histogram("qing_check_hist_" + qing_int_2_string(p) + ".jpg");
-//        //  m_debugger->fast_check_sgbm("qing_check_sgbm_" + qing_int_2_string(p));
-//        m_debugger->fast_check_by_diff("diff_init_" + qing_int_2_string(p) + ".jpg");
-//        m_debugger->save_init_infos(p);                                        //save initial disparity
-//        m_debugger->save_seed_infos(p);                                        //save disparity seeds
-//#endif
-//
-////        cross-check
-////        gudiance filter - recursive bilateral filter
-////        subpixel refinement
-//
-//      //  continue;
-//
-//        /*---------------------------------------------------------------------------------------------------------------------*/
-//        /*                                              propagation                                                            */
-//        /*---------------------------------------------------------------------------------------------------------------------*/
-//        printf( "\n\tdisparity seeds propagation ...");
-//        duration = (double)getTickCount();
-//        m_stereo_pyramid[p]->disp_2_matches();                                     //disparity to matches
-//        m_stereo_pyramid[p]->seed_propagate(0);                                    //left->right propagation
-//        m_stereo_pyramid[p]->seed_propagate(1);                                    //right->left propatation
-//        m_stereo_pyramid[p]->matches_2_disp();                                     //matches to disparity
-//  //      m_stereo_pyramid[p]->removal_isolated_propagation();
-//        m_stereo_pyramid[p]->cross_validation();                                   //crosss check
-//#if DEBUG
-//        m_debugger->save_clean_prop_infos(p);                                                   //save propagate disparitys
-//        m_debugger->fast_check_disp_by_depth("qing_check_clean_prop_depth_"+ qing_int_2_string(p) + ".ply", &(m_stereo_pyramid[p]->get_disp()).front());
-//        m_debugger->fast_check_by_diff("diff_prop_clean_" + qing_int_2_string(p) + ".jpg");
-//#endif
-//
-//        m_stereo_pyramid[p]->check_ordering();
-//#if DEBUG
-//        m_debugger->save_order_check_infos(p, "prop_order_check_" + qing_int_2_string(p) + ".jpg");
-//        m_debugger->fast_check_by_diff("diff_prop_order_check_" + qing_int_2_string(p) + ".jpg");
-//#endif
-//
-////#if DEBUG
-////        m_debugger->save_prop_infos(p);                                                   //save propagate disparitys
-////        m_debugger->fast_check_disp_by_depth("qing_check_prop_depth_"+ qing_int_2_string(p) + ".ply", &(m_stereo_pyramid[p]->get_disp()).front());
-////        m_debugger->fast_check_by_diff("diff_prop_" + qing_int_2_string(p) + ".jpg");
-////#endif
-//
-//        printf( "\n\t--------------------------------------------------------\n" );
-//        printf( "\texpansion: %.2lf s\n", ((double)(getTickCount())-duration)/getTickFrequency() );
-//        printf( "\t--------------------------------------------------------\n" );
-//
-//        //cross-check
-//        //subpixel enhancement
-//
-//        continue;
-//
-//
-//#if 0
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        /*                                           re-match unexpanded pixels                                               */
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        //@add by ranqing : can be replaced by qx-unpsampling codes
-//        printf("\n\trematch unexpanded disparities ...\n");
-//        duration = (double)getTickCount();
-//        m_stereo_pyramid[p]->re_match_l();
-//        m_stereo_pyramid[p]->re_match_r();
-//        m_stereo_pyramid[p]->cross_validation();
-//        printf( "\n\t--------------------------------------------------------\n" );
-//        printf( "\trematch: %.2lf s\n", ((double)(getTickCount())-duration)/getTickFrequency() );
-//        printf( "\t--------------------------------------------------------\n" );
-//#if DEBUG
-//        m_debugger->save_rematch_infos(p);
-//        m_debugger->fast_check_disp_by_depth("qing_check_rematch_depth_"+ qing_int_2_string(p) + ".ply", &(m_stereo_pyramid[p]->get_disp()).front());
-//        m_debugger->fast_check_by_diff("diff_rematch_" + qing_int_2_string(p) + ".jpg");
-//#endif
-//        m_stereo_pyramid[p]->check_ordering();
-//#if DEBUG
-//        m_debugger->save_order_check_infos(p, "rematch_order_check_" + qing_int_2_string(p) + ".jpg");
-//        m_debugger->fast_check_by_diff("diff_rematch_order_check_" + qing_int_2_string(p) + ".jpg");
-//#endif
-//#endif
-//
-//#if 0
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        /*                                           upsampling expanded pixels using guidiance filter                        */
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        //@add by ranqing : 20170119
-//        printf("\n\tumsampling expanded disparities using guidiance filter ...\n");
-//        duration = (double)getTickCount();
-//        m_stereo_pyramid[p]->upsampling_using_rbf();
-//        m_stereo_pyramid[p]->cross_validation();
-//        printf( "\n\t--------------------------------------------------------\n" );
-//        printf( "\tupsampling: %.2lf s\n", ((double)(getTickCount())-duration)/getTickFrequency() );
-//        printf( "\t--------------------------------------------------------\n" );
-//#if DEBUG
-//        m_debugger->save_upsamling_infos(p);
-//#endif
-//#endif
-//
-//#if 0
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        /*                                           scanline optimization                                                    */
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        printf("\n\tscanline optimization ...\n");
-//        duration = (double)getTickCount();
-//        m_stereo_pyramid[p]->scanline_optimize(0);
-//        m_stereo_pyramid[p]->scanline_optimize(1);
-//        m_stereo_pyramid[p]->cross_validation();
-//        printf( "\n\t--------------------------------------------------------\n" );
-//        printf( "\tscanline optimization : %.2lf s\n", ((double)(getTickCount())-duration)/getTickFrequency() );
-//        printf( "\t--------------------------------------------------------\n" );
-//#if DEBUG
-//        m_debugger->save_so_infos(p);                                     //save scanline optimize infos
-//#endif
-//#endif
-//
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        /*                                         disparity refinement : region voting                                       */
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        printf("\n\tdisparity general refinment...region voting...%d times\n", REGION_VOTE_TIMES);
-//        m_stereo_pyramid[p]->init_region_voter();
-//        for(int t = 0; t < REGION_VOTE_TIMES; ++t) {
-//            duration = (double)getTickCount();
-//            m_stereo_pyramid[p]->check_outliers_l();                  //occlusion: 1(Red);   Mismatch: 2(Green)
-//            m_stereo_pyramid[p]->check_outliers_r();
-//            m_stereo_pyramid[p]->region_voting();
-//
-//            printf( "\t--------------------------------------------------------\n" );
-//            printf( "\tregion voting: %.2lf s\n", ((double)(getTickCount())-duration)/getTickFrequency() );
-//            printf( "\t--------------------------------------------------------\n" );
-//        }
-//#if DEBUG
-//        m_debugger->save_rv_infos(p);                                      //save region voting infos
-//#endif
-//
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        /*                                         disparity refinement : median filter                                       */
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        //ranqing @ 2016.11.16
-//        printf("\n\tdisparity general refinment...median filter...\n");
-//        duration = (double)getTickCount();
-//        m_stereo_pyramid[p]->median_filter();
-//        m_stereo_pyramid[p]->cross_validation();
-//        printf( "\t--------------------------------------------------------\n" );
-//        printf( "\tmedian filter : %.2lf s\n", ((double)(getTickCount())-duration)/getTickFrequency() );
-//        printf( "\t--------------------------------------------------------\n" );
-//#if DEBUG
-//        m_debugger->save_median_infos(p);
-//#endif
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        /*                                             save results                                                           */
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        m_debugger->save_final_infos(p);
-//        printf( "\t--------------------------------------------------------\n" );
-//        printf( "\tend of stereo matching in level %d\n", p);
-//        printf( "\t--------------------------------------------------------\n\n" );
-//
-//#if DEBUG
-//         m_debugger->compare_init_final_disp(p);
-//         m_debugger->fast_check_by_diff("diff_final_" + qing_int_2_string(p) + ".jpg", 1);
-//#endif
-//
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        /*                                             subpixel: interplotaion                                                */
-//        /*--------------------------------------------------------------------------------------------------------------------*/
-//        duration = (double)getTickCount();
-//        m_stereo_pyramid[p]->subpixel_enhancement();  //TO-DO
-//        printf( "\n\t--------------------------------------------------------\n" );
-//        printf( "\trefined by subpixel interpolation. %.2lf s\n", ((double)(getTickCount())-duration)/getTickFrequency());
-//        printf( "\t--------------------------------------------------------\n" );
-//#ifdef  DEBUG
-//        m_debugger->save_subpixel_infos(p);
-//        m_debugger->fast_check_disp_by_depth("qing_check_subpixel_depth_"+ qing_int_2_string(p) + ".ply", &(m_stereo_pyramid[p]->get_disp()).front());
-//#endif
-//
-//    }
-//
-//    exit(1);
-//
-//    //copy disparity results from stereo pyramid
-//    copy_disp_from_stereo();
-//}
-
 void HumanBodyScanner::match() {
     QingTimer timer;
 
@@ -457,8 +243,8 @@ void HumanBodyScanner::match() {
     //subpixel enhancement
     savename = "qing_check_depth_sub_" + lvlstr + ".ply";
     m_stereo_pyramid[end]->subpixel_enhancement();      m_debugger->fast_check_disp_by_depth(savename, &(m_stereo_pyramid[end]->get_disp_l()).front());
-    savename = "qing_check_depth_sub_approx_" + lvlstr + ".ply";
-    m_stereo_pyramid[end]->subpixel_approximation();    m_debugger->fast_check_disp_by_depth(savename, &(m_stereo_pyramid[end]->get_disp_l()).front());
+//    savename = "qing_check_depth_sub_approx_" + lvlstr + ".ply";
+//    m_stereo_pyramid[end]->subpixel_approximation();    m_debugger->fast_check_disp_by_depth(savename, &(m_stereo_pyramid[end]->get_disp_l()).front());
 
 # if 0
     //subpixel refinement using beeler formula
@@ -476,41 +262,23 @@ void HumanBodyScanner::match() {
     }
     cout << "beeler's subpixel refinement done.." << endl;
 # endif
+
+    copy_disp_from_stereo();
 }
 
 void HumanBodyScanner::copy_disp_from_stereo() {
     cout << "\n\tcopy disparity from stereo pyramid..." << endl;
-    m_dispL = Mat::zeros(m_size, CV_32FC1);
-    m_dispR = Mat::zeros(m_size, CV_32FC1);
-    m_disp = Mat::zeros(m_size, CV_32FC1);
 
-    vector<float>& disp_vec_l = m_stereo_pyramid[0]->get_disp_l();
-    vector<float>& disp_vec_r = m_stereo_pyramid[0]->get_disp_r();
-    vector<float>& disp_vec   = m_stereo_pyramid[0]->get_disp();
-
-    m_dispL = Mat::zeros(m_size, CV_32FC1);
-    m_dispR = Mat::zeros(m_size, CV_32FC1);
+    vector<float>& disp_vec = m_stereo_pyramid[0]->get_disp_l();
     m_disp  = Mat::zeros(m_size, CV_32FC1);
-    qing_vec_2_img<float>(disp_vec_l, m_dispL);
-    qing_vec_2_img<float>(disp_vec_r, m_dispR);
     qing_vec_2_img<float>(disp_vec, m_disp);
 
 # if 0
-    Mat disp_img_l(m_size, CV_8UC1);
-    Mat disp_img_r(m_size, CV_8UC1);
-    Mat disp_img(m_size, CV_8UC1);
+    Mat disp_img(m_size, CV_8UC1), small_disp;
     float scale = m_stereo_pyramid[0]->get_scale();
-    m_dispL.convertTo(disp_img_l, CV_8UC1, scale);
-    m_dispR.convertTo(disp_img_r, CV_8UC1, scale );
     m_disp.convertTo(disp_img, CV_8UC1, scale);
 
-    Mat small_disp_l, small_disp_r, small_disp;
-
     Size dsize = Size(0.25 * m_size.width, 0.25 * m_size.height);
-    resize(disp_img_l, small_disp_l, dsize);
-    imshow("disp_l", small_disp_l);
-    resize(disp_img_r, small_disp_r, dsize);
-    imshow("disp_r", small_disp_r);
     resize(disp_img, small_disp, dsize);
     imshow("disp", small_disp);
     waitKey(0);

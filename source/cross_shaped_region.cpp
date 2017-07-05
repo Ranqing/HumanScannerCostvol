@@ -1,5 +1,4 @@
 #include "cross_shaped_region.h"
-#include "../../Qing/qing_image.h"
 
 void CrossShapedRegion::init(const int h, const int w, const int sz) {
     set_image_sz(w, h);

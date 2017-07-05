@@ -42,10 +42,10 @@ private:
     string m_out_dir;                           //out directory
 
     Point2i m_crop_pointL, m_crop_pointR;       //crop points
+    Size m_size;                                //image size
     Mat m_imgL, m_imgR;                         //rgb   0 ~ 255
     Mat m_mskL, m_mskR;                         //uchar 0 ~ 255
-    Mat m_dispL, m_dispR, m_disp;               //disparity result
-    Size m_size;                                //image size
+    Mat m_disp;                                 //disparity result
     Mat m_qmatrix;                              //qmatrix to triangulate points
 
     StereoFlow ** m_stereo_pyramid;             //layered stereo matcher

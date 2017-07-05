@@ -25,10 +25,6 @@ file(GLOB PROJECT_FILES
   "source/aggr/*.cpp"
   "source/cost/*.h"
   "source/cost/*.cpp"
-  "source/features/*.h"
-  "source/features/*.cpp"
-  "source/hashmap/*.h"
-  "source/hashmap/*.cpp"
   "source/qx_upsampling/*.h"
   "source/qx_upsampling/*.cpp"
 )

@@ -20,8 +20,8 @@
 #define K2DISP(maxd,mind,k)		(((mind)*(1-(k)) + (maxd)*(k))/((maxd)- (mind)))    //离散级数到视差值的换算, d(k) = (dmin*(1-k) + dmax*(k)) / (dmax-dmin)
 #define DISP2K(maxd,mind,d)		((d) - (mind)/((maxd)-(mind)))                      //视差值换算到离散级数
 
-enum CCType{zncc = 1, cen, tad} ;           //CG: CEN + GRD; ZC: ZNCC + CEN;
-enum CAType{box = 1, gf, bf} ;              //Guidian, Biletaral, Non-linear, Segment-Tree
-enum PPType{wm = 1, sg, np};                //Weight-Median Filter
+//enum CCType{zncc = 1, cen, tad} ;           //CG: CEN + GRD; ZC: ZNCC + CEN;
+//enum CAType{box = 1, gf, bf} ;              //Guidian, Biletaral, Non-linear, Segment-Tree
+//enum PPType{wm = 1, sg, np};                //Weight-Median Filter
 
 #endif // COMMON_H
